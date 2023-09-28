@@ -51,9 +51,8 @@ export default function Container({
     JSON.stringify({
       text: value,
       username: "user",
-      pastId: id,
+      postId: id,
     });
-
   return (
     <Grid>
       <FieldForm

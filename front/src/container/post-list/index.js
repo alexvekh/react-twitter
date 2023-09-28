@@ -9,6 +9,8 @@ import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 
 import { getDate } from "../../util/getDate";
 
+import PostItem from "../post-item";
+
 export default function Container() {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState("");
@@ -84,7 +86,8 @@ export default function Container() {
           ) : (
             data.list.map((item) => (
               <Fragment key={item.id}>
-                {item.username} - {item.date}
+                <PostItem {...item} />
+                {/* {item.username} - {item.date} */}
               </Fragment>
             ))
           )}

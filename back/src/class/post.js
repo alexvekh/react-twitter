@@ -13,10 +13,13 @@ class Post {
   }
 
   static create(username, text, post) {
+    console.log('In to create: ', username, text, post)
     const newPost = new Post(username, text)
 
     if (post) {
       post.reply.push(newPost)
+
+      console.log('Post', post)
     } else {
       this.#list.push(newPost)
     }
