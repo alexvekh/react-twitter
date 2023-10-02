@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import "./index.css";
 
 import FieldForm from "../../component/field-form";
@@ -65,12 +65,14 @@ export default function Container({ id, username, text, date }) {
 
   const [isOpen, setOpen] = useState(false);
   const handleOpen = () => {
-    if (status === null) {
-      getData();
-    }
-
     setOpen(!isOpen);
   };
+
+  useEffect(() => {
+    if (isOpen === true) {
+      getData();
+    }
+  }, [isOpen]);
 
   return (
     <Box style={{ padding: "0" }}>
