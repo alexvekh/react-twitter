@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, useReducer, Fragment } from "react";
 
 import Title from "../../component/title";
 import Grid from "../../component/grid";
@@ -11,28 +11,48 @@ import { getDate } from "../../util/getDate";
 
 import PostItem from "../post-item";
 
+import {
+  requestInitialState,
+  requestReducer,
+  REQUEST_ACTION_TYPE,
+} from "../../util/request";
+
 export default function Container() {
-  const [status, setStatus] = useState(null);
-  const [message, setMessage] = useState("");
-  const [data, setData] = useState(null);
+  const [state, dispatch] = useReducer(requestReducer, requestInitialState);
+  // const [status, setStatus] = useState(null);
+  // const [message, setMessage] = useState("");
+  // const [data, setData] = useState(null);
 
   const getData = async () => {
-    setStatus(LOAD_STATUS.PROGRESS);
+    dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
+    //setStatus(LOAD_STATUS.PROGRESS);
     try {
       const res = await fetch("http://localhost:4000/post-list");
 
       const data = await res.json();
 
       if (res.ok) {
-        setData(convertData(data));
-        setStatus(LOAD_STATUS.SUCCESS);
+        dispatch({
+          type: REQUEST_ACTION_TYPE.SUCCESS,
+          payload: convertData(data),
+        });
+        //setData(convertData(data));
+        //setStatus(LOAD_STATUS.SUCCESS);
       } else {
-        setMessage(data.message);
-        setStatus(LOAD_STATUS.ERROR);
+        dispatch({
+          type: REQUEST_ACTION_TYPE.ERROR,
+          payload: data.message,
+        });
+        //setMessage(data.message);
+        //setStatus(LOAD_STATUS.ERROR);
       }
     } catch (error) {
-      setMessage(error.message);
-      setStatus(LOAD_STATUS.ERROR);
+      dispatch({
+        type: REQUEST_ACTION_TYPE.ERROR,
+        payload: error.message,
+      });
+      //setMessage(error.message);
+      //setStatus(LOAD_STATUS.ERROR);
     }
   };
 
@@ -47,9 +67,13 @@ export default function Container() {
     isEmpty: raw.list.length === 0,
   });
 
-  if (status === null) {
+  useEffect(() => {
     getData();
-  }
+  }, []);
+
+  // if (status === null) {
+  //   getData();
+  // }
 
   return (
     <Grid>
@@ -64,7 +88,7 @@ export default function Container() {
         </Grid>
       </Box>
 
-      {status === LOAD_STATUS.PROGRESS && (
+      {state.status === REQUEST_ACTION_TYPE.PROGRESS && (
         <Fragment>
           <Box>
             <Skeleton />
@@ -75,16 +99,16 @@ export default function Container() {
         </Fragment>
       )}
 
-      {status === LOAD_STATUS.ERROR && (
-        <Alert status={status} message={message} />
+      {state.status === REQUEST_ACTION_TYPE.ERROR && (
+        <Alert status={state.status} message={state.message} />
       )}
 
-      {status === LOAD_STATUS.SUCCESS && (
+      {state.status === REQUEST_ACTION_TYPE.SUCCESS && (
         <Fragment>
-          {data.isEmpty ? (
+          {state.data.isEmpty ? (
             <Alert message="Список постів пустий" />
           ) : (
-            data.list.map((item) => (
+            state.data.list.map((item) => (
               <Fragment key={item.id}>
                 <PostItem {...item} />
                 {/* {item.username} - {item.date} */}

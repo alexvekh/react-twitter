@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import "./index.css";
 
 import FieldForm from "../../component/field-form";
@@ -6,21 +6,29 @@ import Grid from "../../component/grid";
 
 import { Alert, Loader, LOAD_STATUS } from "../../component/load";
 
+import {
+  requestInitialState,
+  requestReducer,
+  REQUEST_ACTION_TYPE,
+} from "../../util/request";
+
 export default function Container({
   onCreate,
   placeholder,
   button,
   id = null,
 }) {
-  const [status, setStatus] = useState(null);
-  const [message, setMassage] = useState("");
+  const [state, dispatch] = useReducer(requestReducer, requestInitialState);
+  // const [status, setStatus] = useState(null);
+  // const [message, setMassage] = useState("");
 
   const handleSubmit = (value) => {
     return sendData({ value });
   };
 
   const sendData = async (dataToSend) => {
-    setStatus(LOAD_STATUS.PROGRESS);
+    dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
+    //setStatus(LOAD_STATUS.PROGRESS);
 
     try {
       const res = await fetch("http://localhost:4000/post-create", {
@@ -34,16 +42,19 @@ export default function Container({
       const data = await res.json();
 
       if (res.ok) {
-        setStatus(null);
+        dispatch({ type: REQUEST_ACTION_TYPE.RESET });
+        //setStatus(null);
 
         if (onCreate) onCreate();
       } else {
-        setMassage(data.message);
-        setStatus(LOAD_STATUS.ERROR);
+        dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: data.message });
+        // setMassage(data.message);
+        // setStatus(LOAD_STATUS.ERROR);
       }
     } catch (error) {
-      setMassage(error.message);
-      setStatus(LOAD_STATUS.ERROR);
+      dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: error.message });
+      //setMassage(error.message);
+      //setStatus(LOAD_STATUS.ERROR);
     }
   };
 
@@ -60,10 +71,10 @@ export default function Container({
         button={button}
         onSubmit={handleSubmit}
       />
-      {status === LOAD_STATUS.ERROR && (
-        <Alert status={status} massage={message} />
+      {state.status === LOAD_STATUS.ERROR && (
+        <Alert status={state.status} massage={state.message} />
       )}
-      {status === LOAD_STATUS.PROGRESS && <Loader />}
+      {state.status === LOAD_STATUS.PROGRESS && <Loader />}
     </Grid>
   );
 }
