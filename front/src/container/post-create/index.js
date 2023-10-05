@@ -1,4 +1,4 @@
-import { useState, useReducer } from "react";
+import { useReducer, memo, useCallback } from "react";
 import "./index.css";
 
 import FieldForm from "../../component/field-form";
@@ -12,58 +12,64 @@ import {
   REQUEST_ACTION_TYPE,
 } from "../../util/request";
 
-export default function Container({
-  onCreate,
-  placeholder,
-  button,
-  id = null,
-}) {
+function Container({ onCreate, placeholder, button, id = null }) {
   const [state, dispatch] = useReducer(requestReducer, requestInitialState);
   // const [status, setStatus] = useState(null);
   // const [message, setMassage] = useState("");
 
-  const handleSubmit = (value) => {
-    return sendData({ value });
-  };
+  const convertData = useCallback(
+    ({ value }) =>
+      JSON.stringify({
+        text: value,
+        username: "user",
+        postId: id,
+      }),
+    [id]
+  );
 
-  const sendData = async (dataToSend) => {
-    dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
-    //setStatus(LOAD_STATUS.PROGRESS);
+  const sendData = useCallback(
+    async (dataToSend) => {
+      dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
+      //setStatus(LOAD_STATUS.PROGRESS);
 
-    try {
-      const res = await fetch("http://localhost:4000/post-create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: convertData(dataToSend),
-      });
+      try {
+        const res = await fetch("http://localhost:4000/post-create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: convertData(dataToSend),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (res.ok) {
-        dispatch({ type: REQUEST_ACTION_TYPE.RESET });
-        //setStatus(null);
+        if (res.ok) {
+          dispatch({ type: REQUEST_ACTION_TYPE.RESET });
+          //setStatus(null);
 
-        if (onCreate) onCreate();
-      } else {
-        dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: data.message });
-        // setMassage(data.message);
-        // setStatus(LOAD_STATUS.ERROR);
+          if (onCreate) onCreate();
+        } else {
+          dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: data.message });
+          // setMassage(data.message);
+          // setStatus(LOAD_STATUS.ERROR);
+        }
+      } catch (error) {
+        dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: error.message });
+        //setMassage(error.message);
+        //setStatus(LOAD_STATUS.ERROR);
       }
-    } catch (error) {
-      dispatch({ type: REQUEST_ACTION_TYPE.ERROR, message: error.message });
-      //setMassage(error.message);
-      //setStatus(LOAD_STATUS.ERROR);
-    }
-  };
+    },
+    [convertData, onCreate]
+  );
 
-  const convertData = ({ value }) =>
-    JSON.stringify({
-      text: value,
-      username: "user",
-      postId: id,
-    });
+  const handleSubmit = useCallback(
+    (value) => {
+      return sendData({ value });
+    },
+    [sendData]
+  );
+
+  console.log("render");
   return (
     <Grid>
       <FieldForm
@@ -78,3 +84,9 @@ export default function Container({
     </Grid>
   );
 }
+
+export default memo(Container, (prev, next) => {
+  console.log(prev, next);
+
+  return true;
+});

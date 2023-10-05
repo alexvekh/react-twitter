@@ -5,6 +5,7 @@ import {
   Fragment,
   lazy,
   Suspense,
+  useCallback,
 } from "react";
 
 import Title from "../../component/title";
@@ -32,7 +33,7 @@ export default function Container() {
   // const [message, setMessage] = useState("");
   // const [data, setData] = useState(null);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
     //setStatus(LOAD_STATUS.PROGRESS);
     try {
@@ -63,7 +64,7 @@ export default function Container() {
       //setMessage(error.message);
       //setStatus(LOAD_STATUS.ERROR);
     }
-  };
+  }, []);
 
   const convertData = (raw) => ({
     list: raw.list.reverse().map(({ id, username, text, date }) => ({

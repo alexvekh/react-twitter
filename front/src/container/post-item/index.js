@@ -1,4 +1,4 @@
-import { Fragment, useState, useReducer, useEffect } from "react";
+import { Fragment, useState, useReducer, useEffect, useCallback } from "react";
 import "./index.css";
 
 import FieldForm from "../../component/field-form";
@@ -37,7 +37,7 @@ export default function Container({ id, username, text, date }) {
   // const [status, setStatus] = useState(null);
   // const [message, setMassage] = useState("");
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     dispatch({
       type: REQUEST_ACTION_TYPE.PROGRESS,
     });
@@ -66,7 +66,7 @@ export default function Container({ id, username, text, date }) {
         payload: error.message,
       });
     }
-  };
+  }, [state.data.id]);
 
   const convertData = ({ post }) => ({
     id: post.id,
