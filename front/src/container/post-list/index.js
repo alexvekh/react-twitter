@@ -1,4 +1,11 @@
-import { useState, useEffect, useReducer, Fragment } from "react";
+import {
+  useState,
+  useEffect,
+  useReducer,
+  Fragment,
+  lazy,
+  Suspense,
+} from "react";
 
 import Title from "../../component/title";
 import Grid from "../../component/grid";
@@ -9,13 +16,15 @@ import { Alert, LOAD_STATUS, Skeleton } from "../../component/load";
 
 import { getDate } from "../../util/getDate";
 
-import PostItem from "../post-item";
+//import PostItem from "../post-item";
 
 import {
   requestInitialState,
   requestReducer,
   REQUEST_ACTION_TYPE,
 } from "../../util/request";
+
+const PostItem = lazy(() => import("../post-item"));
 
 export default function Container() {
   const [state, dispatch] = useReducer(requestReducer, requestInitialState);
@@ -110,7 +119,16 @@ export default function Container() {
           ) : (
             state.data.list.map((item) => (
               <Fragment key={item.id}>
-                <PostItem {...item} />
+                <Suspense
+                  fallback={
+                    <Box>
+                      <Skeleton />
+                    </Box>
+                  }
+                >
+                  <PostItem {...item} />
+                </Suspense>
+
                 {/* {item.username} - {item.date} */}
               </Fragment>
             ))
