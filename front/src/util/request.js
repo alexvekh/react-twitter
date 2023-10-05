@@ -14,7 +14,7 @@ export const requestInitialState = {
 export const requestReducer = (state, action) => {
   switch (action.type) {
     case REQUEST_ACTION_TYPE.PROGRESS:
-      console.log("state", state);
+      //console.log("state", state);
       return {
         ...state,
         status: action.type,
